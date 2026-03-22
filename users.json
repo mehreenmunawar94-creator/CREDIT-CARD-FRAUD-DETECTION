@@ -1,0 +1,33 @@
+[
+  {
+    "id": 1,
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "user@example.com",
+    "username": "user",
+    "password": "e606e38b0d8c19b24cf0ee3808183162ea7cd63ff7912dbb22b5e803286b4446",
+    "role": "user",
+    "registeredAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": 2,
+    "firstName": "Admin",
+    "lastName": "User",
+    "email": "admin@fraudguard.com",
+    "username": "admin",
+    "password": "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9",
+    "role": "admin",
+    "registeredAt": "2026-01-01T00:00:00.000Z"
+  },
+  {
+    "id": 3,
+    "firstName": "mehreen",
+    "lastName": "munawar",
+    "email": "mehreenmunawar94@gmail.com",
+    "username": "mehreen",
+    "password": "ee4ed6ceadef03b4102f0f2b1b115c5ce83244ee5b2183f692b3339d910314f4",
+    "phone": "03227533756",
+    "role": "user",
+    "registeredAt": "2026-03-10T06:47:17.995Z"
+  }
+]
