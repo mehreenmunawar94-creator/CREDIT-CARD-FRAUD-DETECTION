@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FraudGuard - AI Fraud Detection</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+        }
+        .landing-nav {
+            background: #1e293b;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #334155;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+        .landing-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #f59e0b;
+            text-decoration: none;
+        }
+        .landing-logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        .btn {
+            padding: 0.6rem 1.5rem;
+            border-radius: 6px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            margin-left: 0.5rem;
+        }
+        .btn-primary {
+            background: #f59e0b;
+            color: #0f172a;
+        }
+        .btn-secondary {
+            background: transparent;
+            color: #e2e8f0;
+            border: 1px solid #475569;
+        }
+        .hero-section {
+            padding: 8rem 2rem 4rem;
+            text-align: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .hero-title {
+            font-size: 3rem;
+            font-weight: 800;
+            color: #f59e0b;
+            margin-bottom: 1rem;
+        }
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: #94a3b8;
+            max-width: 800px;
+            margin: 0 auto 2rem;
+            line-height: 1.6;
+        }
+        .hero-cta {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+        .cta-primary {
+            background: #f59e0b;
+            color: #0f172a;
+            padding: 0.8rem 2rem;
+            border-radius: 6px;
+            font-weight: 600;
+            text-decoration: none;
+        }
+        .cta-secondary {
+            background: transparent;
+            color: #e2e8f0;
+            padding: 0.8rem 2rem;
+            border-radius: 6px;
+            font-weight: 600;
+            text-decoration: none;
+            border: 1px solid #475569;
+        }
+        .features-section {
+            background: #1e293b;
+            padding: 4rem 2rem;
+        }
+        .section-title {
+            text-align: center;
+            font-size: 2rem;
+            color: #f59e0b;
+            margin-bottom: 3rem;
+        }
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .feature-card {
+            background: #0f172a;
+            padding: 2rem;
+            border-radius: 8px;
+            border: 1px solid #334155;
+        }
+        .feature-icon {
+            font-size: 2rem;
+            color: #f59e0b;
+            margin-bottom: 1rem;
+        }
+        .feature-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #e2e8f0;
+        }
+        .feature-description {
+            color: #94a3b8;
+            line-height: 1.5;
+        }
+        .stats-section {
+            padding: 4rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2rem;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #f59e0b;
+        }
+        .stat-label {
+            color: #94a3b8;
+            margin-top: 0.5rem;
+        }
+        .footer {
+            background: #1e293b;
+            padding: 2rem;
+            text-align: center;
+            color: #64748b;
+            border-top: 1px solid #334155;
+        }
+        @media (max-width: 768px) {
+            .hero-title { font-size: 2rem; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .hero-cta { flex-direction: column; align-items: center; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="landing-nav">
+        <a href="{{ url_for('home') }}" class="landing-logo">
+            <div class="landing-logo-icon"><i class="fas fa-shield-halved"></i></div>
+            <span>FraudGuard</span>
+        </a>
+        <div>
+            <a href="{{ url_for('login') }}" class="btn btn-secondary">Login</a>
+            <a href="{{ url_for('register') }}" class="btn btn-primary">Register</a>
+        </div>
+    </nav>
+
+    <section class="hero-section">
+        <h1 class="hero-title">AI-Powered Fraud Detection</h1>
+        <p class="hero-subtitle">Protect your credit card transactions with advanced machine learning. Real-time monitoring and instant fraud alerts.</p>
+        <div class="hero-cta">
+            <a href="{{ url_for('register') }}" class="cta-primary">Get Started</a>
+            <a href="{{ url_for('login') }}" class="cta-secondary">Login</a>
+        </div>
+    </section>
+
+    <section class="features-section">
+        <h2 class="section-title">Why Choose FraudGuard?</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-bolt"></i></div>
+                <h3 class="feature-title">Real-Time Detection</h3>
+                <p class="feature-description">Instant analysis of every transaction using advanced AI algorithms.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-brain"></i></div>
+                <h3 class="feature-title">Machine Learning</h3>
+                <p class="feature-description">Multiple ML models working together for maximum accuracy.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
+                <h3 class="feature-title">24/7 Monitoring</h3>
+                <p class="feature-description">Round-the-clock protection with instant fraud alerts.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="stats-section">
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-number">1.2M+</div>
+                <div class="stat-label">Transactions</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">94%</div>
+                <div class="stat-label">Accuracy</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">$2.5M</div>
+                <div class="stat-label">Fraud Prevented</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">24/7</div>
+                <div class="stat-label">Monitoring</div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <p>&copy; 2026 FraudGuard. All rights reserved.</p>
+    </footer>
+</body>
+</html>

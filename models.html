@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ML Models - FraudGuard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+        }
+        .app-container { display: flex; min-height: 100vh; }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: #1e293b;
+            border-right: 1px solid #334155;
+            padding: 1.5rem;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #334155;
+        }
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: #f59e0b;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0f172a;
+        }
+        .sidebar-nav { list-style: none; }
+        .nav-item { margin-bottom: 0.5rem; }
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            color: #94a3b8;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+        .nav-link:hover {
+            background: #334155;
+            color: #f59e0b;
+        }
+        .nav-link.active {
+            background: #f59e0b;
+            color: #0f172a;
+        }
+        .nav-icon { width: 20px; }
+        .nav-badge {
+            margin-left: auto;
+            background: #ef4444;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+        }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            padding: 2rem;
+        }
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .page-title {
+            font-size: 2rem;
+            color: #f59e0b;
+        }
+        .page-subtitle {
+            color: #94a3b8;
+            margin-top: 0.25rem;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: #f59e0b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0f172a;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            overflow: hidden;
+        }
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .user-avatar .avatar-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f59e0b;
+        }
+        .user-details {
+            line-height: 1.4;
+        }
+        .user-name {
+            font-weight: 600;
+            color: #f59e0b;
+        }
+        .user-role {
+            font-size: 0.8rem;
+            color: #94a3b8;
+        }
+        .logout-btn {
+            background: #334155;
+            color: #e2e8f0;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .btn-primary {
+            background: #f59e0b;
+            color: #0f172a;
+        }
+        .btn-secondary {
+            background: #334155;
+            color: #e2e8f0;
+        }
+        .grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+        .grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+        .grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+        
+        /* Cards */
+        .model-card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+        .model-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .model-icon {
+            width: 50px;
+            height: 50px;
+            background: #f59e0b20;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #f59e0b;
+            font-size: 1.5rem;
+        }
+        .model-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #f59e0b;
+        }
+        .model-metric {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid #334155;
+        }
+        .metric-label {
+            color: #94a3b8;
+        }
+        .metric-value {
+            font-weight: 600;
+            color: #f59e0b;
+        }
+        .chart-container {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+        .chart-wrapper {
+            height: 300px;
+            position: relative;
+        }
+        @media (max-width: 1024px) {
+            .grid-cols-3 { grid-template-columns: repeat(2, 1fr); }
+            .grid-cols-2 { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-icon"><i class="fas fa-shield-halved"></i></div>
+                <span style="font-size: 1.25rem; font-weight: 700;">FraudGuard</span>
+            </div>
+            <nav>
+                <ul class="sidebar-nav">
+                    <li class="nav-item"><a href="{{ url_for('home') }}" class="nav-link"><i class="fas fa-home nav-icon"></i>Home</a></li>
+                    <li class="nav-item"><a href="{{ url_for('dashboard') }}" class="nav-link"><i class="fas fa-chart-pie nav-icon"></i>Dashboard</a></li>
+                    <li class="nav-item"><a href="{{ url_for('transactions') }}" class="nav-link"><i class="fas fa-credit-card nav-icon"></i>Transactions</a></li>
+                    <li class="nav-item"><a href="{{ url_for('analytics') }}" class="nav-link"><i class="fas fa-chart-line nav-icon"></i>Reports</a></li>
+                    <li class="nav-item"><a href="{{ url_for('models') }}" class="nav-link active"><i class="fas fa-brain nav-icon"></i>ML Models</a></li>
+                    <li class="nav-item"><a href="{{ url_for('alerts') }}" class="nav-link"><i class="fas fa-bell nav-icon"></i>Alerts<span class="nav-badge">3</span></a></li>
+                    <li class="nav-item"><a href="{{ url_for('user_management') }}" class="nav-link"><i class="fas fa-users-cog nav-icon"></i>User Management</a></li>
+                    <li class="nav-item"><a href="{{ url_for('settings') }}" class="nav-link"><i class="fas fa-cog nav-icon"></i>Settings</a></li>
+                    <li class="nav-item"><a href="{{ url_for('more') }}" class="nav-link"><i class="fas fa-ellipsis-h nav-icon"></i>More</a></li>
+                    <li class="nav-item"><a href="#" onclick="handleLogout()" class="nav-link"><i class="fas fa-sign-out-alt nav-icon"></i>Logout</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="page-header">
+                <div>
+                    <h1 class="page-title">ML Models</h1>
+                    <p class="page-subtitle">Performance metrics and comparison</p>
+                </div>
+                <div class="user-info">
+                    <div class="user-profile">
+                        <div class="user-avatar" id="userAvatar" onclick="openProfileModal()">
+                            <div class="avatar-placeholder" id="avatarPlaceholder">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <img id="avatarImage" src="" style="display: none;" alt="Profile">
+                        </div>
+                        <div class="user-details">
+                            <div class="user-name" id="userNameDisplay">Admin User</div>
+                            <div class="user-role" id="userRoleDisplay">Administrator</div>
+                        </div>
+                    </div>
+                    <button class="logout-btn" onclick="handleLogout()">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </div>
+            </header>
+
+            <!-- Model Cards -->
+            <div class="grid grid-cols-3" id="modelCards" style="margin-bottom: 1.5rem;">
+                <!-- Dynamic content -->
+            </div>
+
+            <!-- Charts -->
+            <div class="grid grid-cols-2" style="margin-bottom: 1.5rem;">
+                <div class="chart-container">
+                    <h3 style="margin-bottom: 1rem;">Model Accuracy Comparison</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="accuracyChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <h3 style="margin-bottom: 1rem;">Precision vs Recall</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="prChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feature Importance -->
+            <div class="chart-container">
+                <h3 style="margin-bottom: 1rem;">Feature Importance</h3>
+                <div class="chart-wrapper">
+                    <canvas id="featureChart"></canvas>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Profile Modal (same as before) -->
+    <div class="modal-overlay" id="profileModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 style="color: #f59e0b;">Profile Picture</h3>
+                <button class="modal-close" onclick="closeProfileModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="text-align: center; margin-bottom: 2rem;">
+                    <div style="width: 120px; height: 120px; border-radius: 50%; background: #f59e0b; margin: 0 auto 1rem; display: flex; align-items: center; justify-content: center; overflow: hidden;" id="modalAvatarPreview">
+                        <div style="font-size: 3rem; color: #0f172a;" id="modalAvatarPlaceholder">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <img id="modalAvatarImage" src="" style="display: none; width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                </div>
+                <form id="profileImageForm" onsubmit="updateProfileImage(event)">
+                    <div class="form-group">
+                        <label class="form-label">Choose Image</label>
+                        <input type="file" class="form-input" id="profileImage" accept="image/*" required>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" onclick="closeProfileModal()">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Upload</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 2rem;
+            max-width: 400px;
+            width: 90%;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        .form-group { margin-bottom: 1rem; }
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #cbd5e1;
+        }
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            color: #e2e8f0;
+        }
+    </style>
+
+    <script src="{{ url_for('static', filename='js/mockData.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        // Load user info (same as before)
+        async function loadUserInfo() {
+            try {
+                const response = await fetch('/api/user/current');
+                const data = await response.json();
+                if (data.name) {
+                    document.getElementById('userNameDisplay').textContent = data.name;
+                    document.getElementById('userRoleDisplay').textContent = 
+                        data.role === 'admin' ? 'Administrator' : 'User';
+                    
+                    const savedImage = localStorage.getItem(`profile_${data.id}`);
+                    if (savedImage) {
+                        document.getElementById('avatarImage').src = savedImage;
+                        document.getElementById('avatarImage').style.display = 'block';
+                        document.getElementById('avatarPlaceholder').style.display = 'none';
+                    }
+                }
+            } catch (e) {}
+        }
+
+        // Logout function
+        async function handleLogout() {
+            try {
+                const response = await fetch('/api/logout', { method: 'POST' });
+                const data = await response.json();
+                if (data.success) window.location.href = data.redirect;
+            } catch (e) {
+                window.location.href = '/';
+            }
+        }
+
+        // Profile modal functions
+        function openProfileModal() {
+            document.getElementById('profileModal').classList.add('active');
+        }
+        function closeProfileModal() {
+            document.getElementById('profileModal').classList.remove('active');
+        }
+        async function updateProfileImage(event) {
+            event.preventDefault();
+            const file = document.getElementById('profileImage').files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                const userResponse = await fetch('/api/user/current');
+                const userData = await userResponse.json();
+                
+                localStorage.setItem(`profile_${userData.id}`, e.target.result);
+                
+                document.getElementById('avatarImage').src = e.target.result;
+                document.getElementById('avatarImage').style.display = 'block';
+                document.getElementById('avatarPlaceholder').style.display = 'none';
+                
+                closeProfileModal();
+                alert('Profile picture updated!');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Load model data
+        function loadModels() {
+            const metrics = MockData.generateModelMetrics();
+            const models = [metrics.logisticRegression, metrics.randomForest, metrics.isolationForest];
+            
+            // Render model cards
+            const container = document.getElementById('modelCards');
+            container.innerHTML = models.map(model => `
+                <div class="model-card">
+                    <div class="model-header">
+                        <div class="model-icon"><i class="fas fa-brain"></i></div>
+                        <div>
+                            <div class="model-name">${model.name}</div>
+                            <div style="font-size: 0.8rem; color: #94a3b8;">Last trained: ${Utils.formatTimeAgo(model.lastTrained)}</div>
+                        </div>
+                    </div>
+                    <div class="model-metric">
+                        <span class="metric-label">Accuracy</span>
+                        <span class="metric-value">${model.accuracy}%</span>
+                    </div>
+                    <div class="model-metric">
+                        <span class="metric-label">Precision</span>
+                        <span class="metric-value">${model.precision}%</span>
+                    </div>
+                    <div class="model-metric">
+                        <span class="metric-label">Recall</span>
+                        <span class="metric-value">${model.recall}%</span>
+                    </div>
+                    <div class="model-metric">
+                        <span class="metric-label">F1-Score</span>
+                        <span class="metric-value">${model.f1Score}%</span>
+                    </div>
+                </div>
+            `).join('');
+
+            // Accuracy Chart
+            new Chart(document.getElementById('accuracyChart'), {
+                type: 'bar',
+                data: {
+                    labels: models.map(m => m.name),
+                    datasets: [{
+                        label: 'Accuracy %',
+                        data: models.map(m => m.accuracy),
+                        backgroundColor: '#f59e0b'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            // Precision vs Recall
+            new Chart(document.getElementById('prChart'), {
+                type: 'radar',
+                data: {
+                    labels: models.map(m => m.name),
+                    datasets: [
+                        {
+                            label: 'Precision',
+                            data: models.map(m => m.precision),
+                            borderColor: '#f59e0b',
+                            backgroundColor: '#f59e0b20'
+                        },
+                        {
+                            label: 'Recall',
+                            data: models.map(m => m.recall),
+                            borderColor: '#10b981',
+                            backgroundColor: '#10b98120'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Feature Importance
+            const features = ['Amount', 'Time', 'Location', 'Category', 'Card Type', 'Frequency'];
+            const importance = [0.28, 0.22, 0.18, 0.14, 0.11, 0.07];
+            
+            new Chart(document.getElementById('featureChart'), {
+                type: 'bar',
+                data: {
+                    labels: features,
+                    datasets: [{
+                        label: 'Importance',
+                        data: importance,
+                        backgroundColor: '#f59e0b'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y'
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadUserInfo();
+            loadModels();
+        });
+    </script>
+</body>
+</html>

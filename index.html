@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - FraudGuard</title>
+    <!-- CORRECT PATHS -->
+    <link rel="stylesheet" href="/static/css/main.css">
+    <link rel="stylesheet" href="/static/css/components.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <a href="/index.html" class="sidebar-logo">
+                    <div class="logo-icon"><i class="fas fa-shield-halved"></i></div>
+                    <span>FraudGuard</span>
+                </a>
+            </div>
+            <nav>
+                <ul class="sidebar-nav">
+                    <li class="nav-item"><a href="/" class="nav-link"><i class="fas fa-home nav-icon"></i><span>Home</span></a></li>
+                    <li class="nav-item"><a href="/index.html" class="nav-link active"><i class="fas fa-chart-pie nav-icon"></i><span>Dashboard</span></a></li>
+                    <li class="nav-item"><a href="/transactions.html" class="nav-link"><i class="fas fa-credit-card nav-icon"></i><span>Transactions</span></a></li>
+                    <li class="nav-item"><a href="/analytics.html" class="nav-link"><i class="fas fa-file-alt nav-icon"></i><span>Reports</span></a></li>
+                    <li class="nav-item"><a href="/models.html" class="nav-link"><i class="fas fa-brain nav-icon"></i><span>ML Models</span></a></li>
+                    <li class="nav-item"><a href="/alerts.html" class="nav-link"><i class="fas fa-bell nav-icon"></i><span>Alerts</span><span class="nav-badge" id="alertCount">0</span></a></li>
+                    <li class="nav-item"><a href="/user-management.html" class="nav-link"><i class="fas fa-users-cog nav-icon"></i><span>User Management</span></a></li>
+                    <li class="nav-item"><a href="/settings.html" class="nav-link"><i class="fas fa-cog nav-icon"></i><span>Settings</span></a></li>
+                    <li class="nav-item"><a href="/more.html" class="nav-link"><i class="fas fa-ellipsis-h nav-icon"></i><span>More</span></a></li>
+                    <li class="nav-item"><a href="#" onclick="handleLogout()" class="nav-link"><i class="fas fa-sign-out-alt nav-icon"></i><span>Logout</span></a></li>
+                </ul>
+            </nav>
+        </aside>
+        <button class="sidebar-toggle"><i class="fas fa-bars"></i></button>
+
+        <main class="main-content">
+            <header class="page-header">
+                <div>
+                    <h1 class="page-title">Dashboard</h1>
+                    <p class="page-subtitle">Real-time fraud detection monitoring</p>
+                </div>
+                <div class="page-actions">
+                    <button class="btn btn-secondary" onclick="refreshDashboard()"><i class="fas fa-sync-alt"></i> Refresh</button>
+                    <button class="btn btn-primary" onclick="exportDashboardData()"><i class="fas fa-download"></i> Export Report</button>
+                </div>
+            </header>
+
+            <!-- Notification bell will be inserted here by JS -->
+            <div id="notification-bell-container"></div>
+
+            <section class="grid grid-cols-4" id="statsGrid"></section>
+
+            <section class="grid grid-cols-2" style="margin-top:2rem;">
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Transaction Trends (Last 7 Days)</h3>
+                        <select class="form-select" style="width:auto;" onchange="updateTrendPeriod(this.value)">
+                            <option value="7">7 Days</option>
+                            <option value="14">14 Days</option>
+                            <option value="30">30 Days</option>
+                        </select>
+                    </div>
+                    <div class="chart-wrapper"><canvas id="trendChart"></canvas></div>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-header"><h3 class="chart-title">Fraud vs Legitimate</h3></div>
+                    <div class="chart-wrapper"><canvas id="distributionChart"></canvas></div>
+                </div>
+            </section>
+
+            <section style="margin-top:2rem;">
+                <div class="chart-container">
+                    <div class="chart-header"><h3 class="chart-title">Hourly Transaction Activity</h3></div>
+                    <div class="chart-wrapper"><canvas id="hourlyChart"></canvas></div>
+                </div>
+            </section>
+
+            <section style="margin-top:2rem;">
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3 class="table-title">Recent Fraud Alerts</h3>
+                        <div class="table-actions">
+                            <a href="/alerts.html" class="btn btn-secondary btn-sm">View All <i class="fas fa-arrow-right"></i></a>
+                        </div>
+                    </div>
+                    <div class="table-wrapper">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Transaction ID</th>
+                                    <th>Date & Time</th>
+                                    <th>Merchant</th>
+                                    <th>Amount</th>
+                                    <th>Fraud Probability</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentAlertsTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Transaction Detail Modal -->
+    <div class="modal-overlay" id="transactionModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Transaction Details</h3>
+                <button class="modal-close" onclick="closeTransactionModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="transactionDetails"></div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeTransactionModal()">Close</button>
+                <button class="btn btn-danger">Flag as Fraud</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/auth.js"></script>
+    <script src="/static/js/mockData.js"></script>
+    <script src="/static/js/main.js"></script>
+    <script src="/static/js/notifications.js"></script>
+    <script src="/static/js/dashboard.js"></script>
+    <script>auth.requireAuth('admin');</script>
+</body>
+</html>

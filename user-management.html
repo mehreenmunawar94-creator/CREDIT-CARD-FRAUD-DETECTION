@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management - FraudGuard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+        }
+        .app-container { display: flex; min-height: 100vh; }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: #1e293b;
+            border-right: 1px solid #334155;
+            padding: 1.5rem;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #334155;
+        }
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: #f59e0b;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0f172a;
+        }
+        .sidebar-nav { list-style: none; }
+        .nav-item { margin-bottom: 0.5rem; }
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            color: #94a3b8;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+        .nav-link:hover {
+            background: #334155;
+            color: #f59e0b;
+        }
+        .nav-link.active {
+            background: #f59e0b;
+            color: #0f172a;
+        }
+        .nav-icon { width: 20px; }
+        .nav-badge {
+            margin-left: auto;
+            background: #ef4444;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+        }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            padding: 2rem;
+        }
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .page-title {
+            font-size: 2rem;
+            color: #f59e0b;
+        }
+        .page-subtitle {
+            color: #94a3b8;
+            margin-top: 0.25rem;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: #f59e0b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0f172a;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            overflow: hidden;
+        }
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .user-avatar .avatar-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f59e0b;
+        }
+        .user-details {
+            line-height: 1.4;
+        }
+        .user-name {
+            font-weight: 600;
+            color: #f59e0b;
+        }
+        .user-role {
+            font-size: 0.8rem;
+            color: #94a3b8;
+        }
+        .logout-btn {
+            background: #334155;
+            color: #e2e8f0;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .btn-primary {
+            background: #f59e0b;
+            color: #0f172a;
+        }
+        .btn-secondary {
+            background: #334155;
+            color: #e2e8f0;
+        }
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+        .table-container {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .table-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .search-box {
+            padding: 0.5rem;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 4px;
+            color: #e2e8f0;
+            width: 250px;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .data-table th {
+            text-align: left;
+            padding: 1rem 1.5rem;
+            background: #0f172a;
+            color: #94a3b8;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+        .data-table td {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #334155;
+        }
+        .data-table tr:hover {
+            background: #33415530;
+        }
+        .badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge-admin {
+            background: #ef4444;
+            color: white;
+        }
+        .badge-analyst {
+            background: #f59e0b;
+            color: #0f172a;
+        }
+        .badge-user {
+            background: #10b981;
+            color: white;
+        }
+        .badge-active {
+            background: #10b981;
+            color: white;
+        }
+        .badge-inactive {
+            background: #64748b;
+            color: white;
+        }
+        .action-btn {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            margin: 0 0.25rem;
+        }
+        
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        .modal-close:hover { color: #f59e0b; }
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        .form-group { margin-bottom: 1rem; }
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #cbd5e1;
+        }
+        .form-input, .form-select {
+            width: 100%;
+            padding: 0.75rem;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            color: #e2e8f0;
+        }
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: #f59e0b;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-icon"><i class="fas fa-shield-halved"></i></div>
+                <span style="font-size: 1.25rem; font-weight: 700;">FraudGuard</span>
+            </div>
+            <nav>
+                <ul class="sidebar-nav">
+                    <li class="nav-item"><a href="{{ url_for('home') }}" class="nav-link"><i class="fas fa-home nav-icon"></i>Home</a></li>
+                    <li class="nav-item"><a href="{{ url_for('dashboard') }}" class="nav-link"><i class="fas fa-chart-pie nav-icon"></i>Dashboard</a></li>
+                    <li class="nav-item"><a href="{{ url_for('transactions') }}" class="nav-link"><i class="fas fa-credit-card nav-icon"></i>Transactions</a></li>
+                    <li class="nav-item"><a href="{{ url_for('analytics') }}" class="nav-link"><i class="fas fa-chart-line nav-icon"></i>Reports</a></li>
+                    <li class="nav-item"><a href="{{ url_for('models') }}" class="nav-link"><i class="fas fa-brain nav-icon"></i>ML Models</a></li>
+                    <li class="nav-item"><a href="{{ url_for('alerts') }}" class="nav-link"><i class="fas fa-bell nav-icon"></i>Alerts<span class="nav-badge">3</span></a></li>
+                    <li class="nav-item"><a href="{{ url_for('user_management') }}" class="nav-link active"><i class="fas fa-users-cog nav-icon"></i>User Management</a></li>
+                    <li class="nav-item"><a href="{{ url_for('settings') }}" class="nav-link"><i class="fas fa-cog nav-icon"></i>Settings</a></li>
+                    <li class="nav-item"><a href="{{ url_for('more') }}" class="nav-link"><i class="fas fa-ellipsis-h nav-icon"></i>More</a></li>
+                    <li class="nav-item"><a href="#" onclick="handleLogout()" class="nav-link"><i class="fas fa-sign-out-alt nav-icon"></i>Logout</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="page-header">
+                <div>
+                    <h1 class="page-title">User Management</h1>
+                    <p class="page-subtitle">Manage system users and roles</p>
+                </div>
+                <div class="user-info">
+                    <div class="user-profile">
+                        <div class="user-avatar" id="userAvatar" onclick="openProfileModal()">
+                            <div class="avatar-placeholder" id="avatarPlaceholder">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <img id="avatarImage" src="" style="display: none;" alt="Profile">
+                        </div>
+                        <div class="user-details">
+                            <div class="user-name" id="userNameDisplay">Admin User</div>
+                            <div class="user-role" id="userRoleDisplay">Administrator</div>
+                        </div>
+                    </div>
+                    <button class="logout-btn" onclick="handleLogout()">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
+                </div>
+            </header>
+
+            <!-- Users Table -->
+            <div class="table-container">
+                <div class="table-header">
+                    <h3>System Users</h3>
+                    <div style="display: flex; gap: 1rem;">
+                        <input type="text" class="search-box" id="searchInput" placeholder="Search users..." onkeyup="searchUsers()">
+                        <button class="btn btn-primary" onclick="openUserModal()">
+                            <i class="fas fa-user-plus"></i> Add User
+                        </button>
+                    </div>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Registered</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <tr><td colspan="7" style="text-align: center; padding: 2rem;">Loading users...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- User Modal (Add/Edit) -->
+    <div class="modal-overlay" id="userModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 style="color: #f59e0b;" id="modalTitle">Add User</h3>
+                <button class="modal-close" onclick="closeUserModal()">&times;</button>
+            </div>
+            <form id="userForm" onsubmit="saveUser(event)">
+                <div class="form-group">
+                    <label class="form-label">First Name</label>
+                    <input type="text" class="form-input" id="firstName" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Last Name</label>
+                    <input type="text" class="form-input" id="lastName" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-input" id="email" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Username</label>
+                    <input type="text" class="form-input" id="username" required>
+                </div>
+                <div class="form-group" id="passwordField">
+                    <label class="form-label">Password</label>
+                    <input type="password" class="form-input" id="password" placeholder="Leave blank to keep current">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Role</label>
+                    <select class="form-select" id="role">
+                        <option value="user">User</option>
+                        <option value="analyst">Analyst</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    <select class="form-select" id="status">
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeUserModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div class="modal-overlay" id="profileModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 style="color: #f59e0b;">Profile Picture</h3>
+                <button class="modal-close" onclick="closeProfileModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="text-align: center; margin-bottom: 2rem;">
+                    <div style="width: 120px; height: 120px; border-radius: 50%; background: #f59e0b; margin: 0 auto 1rem; display: flex; align-items: center; justify-content: center; overflow: hidden;" id="modalAvatarPreview">
+                        <div style="font-size: 3rem; color: #0f172a;" id="modalAvatarPlaceholder">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <img id="modalAvatarImage" src="" style="display: none; width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                </div>
+                <form id="profileImageForm" onsubmit="updateProfileImage(event)">
+                    <div class="form-group">
+                        <label class="form-label">Choose Image</label>
+                        <input type="file" class="form-input" id="profileImage" accept="image/*" required>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" onclick="closeProfileModal()">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Upload</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        let users = [];
+        let editingUserId = null;
+
+        // Load user info
+        async function loadUserInfo() {
+            try {
+                const response = await fetch('/api/user/current');
+                const data = await response.json();
+                if (data.name) {
+                    document.getElementById('userNameDisplay').textContent = data.name;
+                    document.getElementById('userRoleDisplay').textContent = 
+                        data.role === 'admin' ? 'Administrator' : 'User';
+                    
+                    const savedImage = localStorage.getItem(`profile_${data.id}`);
+                    if (savedImage) {
+                        document.getElementById('avatarImage').src = savedImage;
+                        document.getElementById('avatarImage').style.display = 'block';
+                        document.getElementById('avatarPlaceholder').style.display = 'none';
+                    }
+                }
+            } catch (e) {}
+        }
+
+        // Logout function
+        async function handleLogout() {
+            try {
+                const response = await fetch('/api/logout', { method: 'POST' });
+                const data = await response.json();
+                if (data.success) window.location.href = data.redirect;
+            } catch (e) {
+                window.location.href = '/';
+            }
+        }
+
+        // Profile modal functions
+        function openProfileModal() {
+            document.getElementById('profileModal').classList.add('active');
+        }
+        function closeProfileModal() {
+            document.getElementById('profileModal').classList.remove('active');
+        }
+        async function updateProfileImage(event) {
+            event.preventDefault();
+            const file = document.getElementById('profileImage').files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                const userResponse = await fetch('/api/user/current');
+                const userData = await userResponse.json();
+                
+                localStorage.setItem(`profile_${userData.id}`, e.target.result);
+                
+                document.getElementById('avatarImage').src = e.target.result;
+                document.getElementById('avatarImage').style.display = 'block';
+                document.getElementById('avatarPlaceholder').style.display = 'none';
+                
+                closeProfileModal();
+                alert('Profile picture updated!');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Load users from API
+        async function loadUsers() {
+            try {
+                const response = await fetch('/api/users');
+                users = await response.json();
+                renderUsers();
+            } catch (e) {
+                console.error('Error loading users');
+                // Fallback mock data
+                users = [
+                    { id: 1, firstName: 'John', lastName: 'Doe', email: 'john@example.com', username: 'john', role: 'admin', status: 'active', registeredAt: '2026-01-01' },
+                    { id: 2, firstName: 'Jane', lastName: 'Smith', email: 'jane@example.com', username: 'jane', role: 'analyst', status: 'active', registeredAt: '2026-01-02' },
+                    { id: 3, firstName: 'Bob', lastName: 'Johnson', email: 'bob@example.com', username: 'bob', role: 'user', status: 'inactive', registeredAt: '2026-01-03' },
+                ];
+                renderUsers();
+            }
+        }
+
+        function renderUsers() {
+            const tbody = document.getElementById('usersTableBody');
+            tbody.innerHTML = users.map(user => `
+                <tr>
+                    <td>${user.id}</td>
+                    <td>${user.firstName} ${user.lastName}</td>
+                    <td>${user.email}</td>
+                    <td><span class="badge badge-${user.role}">${user.role}</span></td>
+                    <td><span class="badge badge-${user.status}">${user.status}</span></td>
+                    <td>${new Date(user.registeredAt).toLocaleDateString()}</td>
+                    <td>
+                        <button class="action-btn btn-secondary" onclick="editUser(${user.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="action-btn btn-danger" onclick="deleteUser(${user.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function searchUsers() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = users.filter(user => 
+                user.firstName.toLowerCase().includes(search) ||
+                user.lastName.toLowerCase().includes(search) ||
+                user.email.toLowerCase().includes(search)
+            );
+            
+            const tbody = document.getElementById('usersTableBody');
+            tbody.innerHTML = filtered.map(user => `
+                <tr>
+                    <td>${user.id}</td>
+                    <td>${user.firstName} ${user.lastName}</td>
+                    <td>${user.email}</td>
+                    <td><span class="badge badge-${user.role}">${user.role}</span></td>
+                    <td><span class="badge badge-${user.status}">${user.status}</span></td>
+                    <td>${new Date(user.registeredAt).toLocaleDateString()}</td>
+                    <td>
+                        <button class="action-btn btn-secondary" onclick="editUser(${user.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="action-btn btn-danger" onclick="deleteUser(${user.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function openUserModal() {
+            editingUserId = null;
+            document.getElementById('modalTitle').textContent = 'Add User';
+            document.getElementById('userForm').reset();
+            document.getElementById('passwordField').style.display = 'block';
+            document.getElementById('userModal').classList.add('active');
+        }
+
+        function closeUserModal() {
+            document.getElementById('userModal').classList.remove('active');
+        }
+
+        function editUser(id) {
+            const user = users.find(u => u.id === id);
+            if (!user) return;
+            
+            editingUserId = id;
+            document.getElementById('modalTitle').textContent = 'Edit User';
+            document.getElementById('firstName').value = user.firstName;
+            document.getElementById('lastName').value = user.lastName;
+            document.getElementById('email').value = user.email;
+            document.getElementById('username').value = user.username;
+            document.getElementById('role').value = user.role;
+            document.getElementById('status').value = user.status;
+            document.getElementById('passwordField').style.display = 'none';
+            document.getElementById('userModal').classList.add('active');
+        }
+
+        async function saveUser(event) {
+            event.preventDefault();
+            
+            const userData = {
+                firstName: document.getElementById('firstName').value,
+                lastName: document.getElementById('lastName').value,
+                email: document.getElementById('email').value,
+                username: document.getElementById('username').value,
+                role: document.getElementById('role').value,
+                status: document.getElementById('status').value,
+                registeredAt: new Date().toISOString()
+            };
+
+            if (!editingUserId) {
+                userData.password = document.getElementById('password').value;
+            }
+
+            // In production, send to API
+            if (editingUserId) {
+                // Update existing user
+                const index = users.findIndex(u => u.id === editingUserId);
+                users[index] = { ...users[index], ...userData };
+                alert('User updated successfully!');
+            } else {
+                // Add new user
+                userData.id = users.length + 1;
+                users.push(userData);
+                alert('User added successfully!');
+            }
+
+            renderUsers();
+            closeUserModal();
+        }
+
+        function deleteUser(id) {
+            if (confirm('Are you sure you want to delete this user?')) {
+                users = users.filter(u => u.id !== id);
+                renderUsers();
+                alert('User deleted successfully!');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadUserInfo();
+            loadUsers();
+        });
+    </script>
+</body>
+</html>
